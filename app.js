@@ -14,13 +14,12 @@ const spotModal = document.getElementById("spotModal");
 const quizModal = document.getElementById("quizModal");
 
 const spotTitleEl = document.getElementById("spotTitle");
+const spotMessageEl = document.getElementById("spotMessage");
 const locationCheckTextEl = document.getElementById("locationCheckText");
 const missionStartBtn = document.getElementById("missionStartBtn");
 const missionCompleteBtn = document.getElementById("missionCompleteBtn");
 
-const closeSpotModal = document.getElementById("closeSpotModal");
 const spotCloseBtn = document.getElementById("spotCloseBtn");
-const closeQuizModal = document.getElementById("closeQuizModal");
 const quizCloseBtn = document.getElementById("quizCloseBtn");
 
 const choiceO = document.getElementById("choiceO");
@@ -99,13 +98,14 @@ const markerLayout = [
 const spots = Array.from({ length: TOTAL_SPOTS }, (_, i) => {
   const index = i + 1;
   const layout = markerLayout[i] || {
-    x: 20 + ((i % 5) * 14),
-    y: 20 + (Math.floor(i / 5) * 11),
+    x: 20 + (i % 5) * 14,
+    y: 20 + Math.floor(i / 5) * 11,
   };
 
   return {
     id: index,
-    title: `${index}번 여행지`,
+    title: `${index}번 칸`,
+    popupMessage: `${index}번칸입니다`,
     xPercent: layout.x,
     yPercent: layout.y,
     lat: 37.5031 + i * 0.0003,
@@ -136,6 +136,7 @@ function isCompleted(spotId) {
 
 function markCompleted(spotId) {
   if (isCompleted(spotId)) return;
+
   state.completed.push(spotId);
   saveProgress();
   updateCounters();
@@ -170,6 +171,20 @@ function closeModal(modalEl) {
   modalEl.setAttribute("aria-hidden", "true");
 }
 
+function closeSpotPopup() {
+  closeModal(spotModal);
+  state.activeSpotId = null;
+}
+
+function closeQuizPopup() {
+  closeModal(quizModal);
+  state.activeQuizSpotId = null;
+  state.answeredCorrectly = false;
+  missionCompleteBtn.disabled = true;
+  quizResultArea.textContent = "";
+  quizResultArea.className = "quiz-result-area";
+}
+
 function getSpotById(spotId) {
   return spots.find((spot) => spot.id === spotId) || null;
 }
@@ -194,18 +209,21 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
 
 function isInsideSpot(spot) {
   if (!state.userPosition) return false;
+
   const d = distanceMeters(
     state.userPosition.latitude,
     state.userPosition.longitude,
     spot.lat,
     spot.lng
   );
+
   return d <= spot.radius;
 }
 
 function updateGeoStatusText() {
   if (!state.userPosition) {
-    geoStatusEl.textContent = "위치 권한을 허용하면 미션 수행 가능 여부를 확인할 수 있어요.";
+    geoStatusEl.textContent =
+      "위치 권한을 허용하면 미션 수행 가능 여부를 확인할 수 있어요.";
     return;
   }
 
@@ -268,7 +286,6 @@ function refreshMarkerState(spotId, animateStamp = false) {
 
   if (animateStamp) {
     target.element.classList.remove("stamp-animate");
-    // reflow
     void target.element.offsetWidth;
     target.element.classList.add("stamp-animate");
   }
@@ -279,11 +296,12 @@ function onMarkerClick(spotId) {
 
   state.activeSpotId = spotId;
   state.answeredCorrectly = false;
-  const spot = getSpotById(spotId);
 
+  const spot = getSpotById(spotId);
   if (!spot) return;
 
   spotTitleEl.textContent = spot.title;
+  spotMessageEl.textContent = spot.popupMessage;
 
   const available = isInsideSpot(spot);
   missionStartBtn.disabled = !available;
@@ -296,6 +314,7 @@ function onMarkerClick(spotId) {
 
 function openQuizForActiveSpot() {
   if (!state.activeSpotId) return;
+
   state.activeQuizSpotId = state.activeSpotId;
   state.answeredCorrectly = false;
 
@@ -311,13 +330,10 @@ function finishMissionForActiveSpot() {
   const spotId = state.activeQuizSpotId;
   if (!spotId || !state.answeredCorrectly) return;
 
-  closeModal(quizModal);
   markCompleted(spotId);
+  closeQuizPopup();
   showToast("도장이 찍혔습니다!");
-
   state.activeSpotId = null;
-  state.activeQuizSpotId = null;
-  state.answeredCorrectly = false;
 }
 
 function setQuizResult(correct) {
@@ -329,8 +345,8 @@ function setQuizResult(correct) {
   } else {
     quizResultArea.textContent = "오답입니다";
     quizResultArea.className = "quiz-result-area wrong";
-    state.answeredCorrectly = false;
     missionCompleteBtn.disabled = true;
+    state.answeredCorrectly = false;
   }
 
   showToast(correct ? "정답입니다" : "오답입니다");
@@ -592,7 +608,6 @@ function setupMapInteractions() {
     "wheel",
     (event) => {
       event.preventDefault();
-
       const delta = event.deltaY < 0 ? 0.15 : -0.15;
       const nextZoom = state.zoom + delta;
       zoomAtPoint(nextZoom, event.clientX, event.clientY);
@@ -616,17 +631,15 @@ function setupModalEvents() {
     finishMissionForActiveSpot();
   });
 
-  closeSpotModal.addEventListener("click", () => closeModal(spotModal));
-  spotCloseBtn.addEventListener("click", () => closeModal(spotModal));
-  closeQuizModal.addEventListener("click", () => closeModal(quizModal));
-  quizCloseBtn.addEventListener("click", () => closeModal(quizModal));
+  spotCloseBtn.addEventListener("click", closeSpotPopup);
+  quizCloseBtn.addEventListener("click", closeQuizPopup);
 
   document.querySelectorAll("[data-close='spot']").forEach((el) => {
-    el.addEventListener("click", () => closeModal(spotModal));
+    el.addEventListener("click", closeSpotPopup);
   });
 
   document.querySelectorAll("[data-close='quiz']").forEach((el) => {
-    el.addEventListener("click", () => closeModal(quizModal));
+    el.addEventListener("click", closeQuizPopup);
   });
 
   choiceO.addEventListener("click", () => {

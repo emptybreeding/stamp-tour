@@ -1,111 +1,116 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-  />
-  <title>경기문화재단 스탬프투어</title>
-  <link rel="stylesheet" href="./style.css" />
-</head>
-<body>
-  <div id="app">
-    <header class="topbar">
-      <div class="brand">스탬프투어</div>
-      <div class="status-panel">
-        <div class="status-row">
-          <span class="status-label">완료</span>
-          <strong id="completedCount">0</strong>
-          <span>/ 31</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+    />
+    <title>스탬프 투어</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">스탬프투어</div>
+
+        <div class="status-panel">
+          <div class="status-card">
+            <span class="status-label">남은 여행지</span>
+            <strong id="remainingCount">31</strong>
+          </div>
+          <div class="status-card">
+            <span class="status-label">완료</span>
+            <strong id="completedCount">0 / 31</strong>
+          </div>
         </div>
-        <div class="status-row">
-          <span class="status-label">남은 여행지</span>
-          <strong id="remainingCount">31</strong>
+      </header>
+
+      <main class="map-shell">
+        <div id="mapViewport" class="map-viewport">
+          <div id="mapStage" class="map-stage">
+            <img
+              id="mapImage"
+              src="./assets/gyeonggi-map.png"
+              alt="스탬프 투어 지도"
+              draggable="false"
+            />
+            <div id="markerLayer" class="marker-layer"></div>
+          </div>
         </div>
-      </div>
-    </header>
+      </main>
 
-    <main class="map-page">
-      <div id="mapViewport" class="map-viewport">
-        <div id="mapScene" class="map-scene">
-          <img
-            id="tourMap"
-            class="tour-map"
-            src="gyeonggi-map.png"
-            alt="경기도 스탬프투어 지도"
-            draggable="false"
-          />
-          <div id="markerLayer" class="marker-layer" aria-label="스탬프 위치 레이어"></div>
-        </div>
-      </div>
-
-      <div class="guide-text">
-        지도를 손가락으로 이동하고, 핀치로 확대/축소할 수 있어요.
-      </div>
-    </main>
-  </div>
-
-  <!-- 기본 팝업 -->
-  <div id="spotModal" class="modal hidden" aria-hidden="true">
-    <div class="modal-backdrop" data-close="spot"></div>
-    <div class="modal-card">
-      <button class="modal-x" id="spotModalCloseX" type="button" aria-label="닫기">×</button>
-
-      <div class="modal-icon-wrap">
-        <div class="modal-icon">🧭</div>
-      </div>
-
-      <h2 id="spotTitle" class="modal-title">여행지</h2>
-      <p class="modal-welcome">어서오세요</p>
-      <p id="locationStatusText" class="location-status">
-        현재 위치를 확인하고 있어요...
-      </p>
-
-      <div class="modal-actions">
-        <button id="missionStartBtn" class="btn btn-primary" type="button" disabled>
-          미션수행
-        </button>
-        <button id="spotCloseBtn" class="btn btn-secondary" type="button">
-          닫기
-        </button>
+      <div class="geo-bar">
+        <span id="geoStatus">위치 확인 중...</span>
       </div>
     </div>
-  </div>
 
-  <!-- 퀴즈 팝업 -->
-  <div id="quizModal" class="modal hidden" aria-hidden="true">
-    <div class="modal-backdrop" data-close="quiz"></div>
-    <div class="modal-card quiz-card">
-      <button class="modal-x" id="quizModalCloseX" type="button" aria-label="닫기">×</button>
+    <!-- 기본 팝업 -->
+    <div id="spotModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close="spot"></div>
 
-      <div class="quiz-badge">MISSION QUIZ</div>
-      <h2 class="quiz-title">O / X 퀴즈</h2>
-      <p class="quiz-question">대한민국의 국번은 82가 맞다.</p>
+      <div class="modal-panel">
+        <div class="spot-icon-wrap">
+          <div class="spot-icon">📍</div>
+        </div>
 
-      <div class="ox-buttons">
-        <button id="answerO" class="ox-btn ox-o" type="button">O</button>
-        <button id="answerX" class="ox-btn ox-x" type="button">X</button>
-      </div>
+        <h2 id="spotTitle" class="modal-title">여행지</h2>
+        <p id="spotMessage" class="modal-desc">어서오세요</p>
 
-      <p id="quizResultText" class="quiz-result">정답을 선택해 주세요.</p>
+        <div class="location-box">
+          <span class="location-label">위치 인증</span>
+          <strong id="locationCheckText">확인 중...</strong>
+        </div>
 
-      <div class="modal-actions">
-        <button id="missionCompleteBtn" class="btn btn-primary" type="button" disabled>
-          미션수행 완료
-        </button>
-        <button id="quizCloseBtn" class="btn btn-secondary" type="button">
-          닫기
-        </button>
+        <div class="modal-actions">
+          <button id="missionStartBtn" class="btn btn-primary" type="button" disabled>
+            미션수행
+          </button>
+          <button id="spotCloseBtn" class="btn btn-secondary" type="button">
+            닫기
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- 토스트 -->
-  <div id="toast" class="toast hidden"></div>
+    <!-- 퀴즈 팝업 -->
+    <div id="quizModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close="quiz"></div>
 
-  <!-- Panzoom -->
-  <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
-  <script src="./app.js"></script>
-</body>
+      <div class="modal-panel quiz-panel">
+        <div class="quiz-badge">O/X 퀴즈</div>
+        <h2 class="modal-title">미션 수행</h2>
+
+        <div class="quiz-question">
+          대한민국의 국번은 <strong>82</strong>가 맞다?
+        </div>
+
+        <div class="quiz-choices">
+          <button id="choiceO" class="choice-btn choice-o" type="button">O</button>
+          <button id="choiceX" class="choice-btn choice-x" type="button">X</button>
+        </div>
+
+        <div id="quizResultArea" class="quiz-result-area"></div>
+
+        <div class="modal-actions">
+          <button
+            id="missionCompleteBtn"
+            class="btn btn-primary"
+            type="button"
+            disabled
+          >
+            미션수행 완료
+          </button>
+          <button id="quizCloseBtn" class="btn btn-secondary" type="button">
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 토스트 -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="./app.js"></script>
+  </body>
 </html>
