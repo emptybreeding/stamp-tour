@@ -135,6 +135,12 @@ const spots = Array.from({ length: TOTAL_SPOTS }, (_, i) => {
   };
 });
 
+function setLoginHelp(message) {
+  if (loginHelpText) {
+    loginHelpText.textContent = message;
+  }
+}
+
 function showToast(message) {
   toastEl.textContent = message;
   toastEl.classList.remove("hidden");
@@ -171,12 +177,16 @@ function updateAccountUI(user) {
   }
 
   let providerLabel = "로그인";
+  let displayName = user.displayName || user.email || "사용자";
 
   if (user.isAnonymous) {
     providerLabel = "게스트";
+    displayName = "게스트 사용자";
   } else {
     const providerId =
-      (user.providerData && user.providerData[0] && user.providerData[0].providerId) ||
+      (user.providerData &&
+        user.providerData[0] &&
+        user.providerData[0].providerId) ||
       "custom";
 
     providerLabel =
@@ -187,16 +197,17 @@ function updateAccountUI(user) {
         : "로그인";
   }
 
-  accountName.textContent =
-    `${user.displayName || user.email || "게스트 사용자"} · ${providerLabel}`;
+  accountName.textContent = `${displayName} · ${providerLabel}`;
   accountBox.classList.remove("hidden");
 }
 
 function normalizeCompleted(value) {
   if (!Array.isArray(value)) return [];
-  return [...new Set(value.filter((n) => Number.isInteger(n) && n >= 1 && n <= TOTAL_SPOTS))].sort(
-    (a, b) => a - b
-  );
+  return [
+    ...new Set(
+      value.filter((n) => Number.isInteger(n) && n >= 1 && n <= TOTAL_SPOTS)
+    ),
+  ].sort((a, b) => a - b);
 }
 
 async function loadUserProgress() {
@@ -235,6 +246,7 @@ async function loadUserProgress() {
   } catch (error) {
     console.error("진행 상태 불러오기 실패:", error);
     showToast("저장된 진행 정보를 불러오지 못했습니다.");
+    setLoginHelp(`저장 불러오기 실패: ${error.message}`);
   }
 }
 
@@ -806,6 +818,7 @@ function buildKakaoState() {
 
 function startKakaoLogin() {
   if (!kakao.restApiKey || !kakao.loginEndpoint) {
+    setLoginHelp("카카오 설정값이 비어 있습니다.");
     showToast("카카오 설정값이 비어 있습니다.");
     return;
   }
@@ -820,6 +833,7 @@ function startKakaoLogin() {
     state: stateToken,
   });
 
+  setLoginHelp("카카오 로그인 페이지로 이동 중입니다...");
   window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
 }
 
@@ -830,6 +844,7 @@ async function handleKakaoCallbackIfNeeded() {
   const error = url.searchParams.get("error");
 
   if (error) {
+    setLoginHelp(`카카오 로그인 실패: ${error}`);
     showToast("카카오 로그인에 실패했습니다.");
     cleanAuthQueryString();
     return;
@@ -841,12 +856,13 @@ async function handleKakaoCallbackIfNeeded() {
 
   const storedState = sessionStorage.getItem("kakao_oauth_state");
   if (!storedState || storedState !== stateParam) {
+    setLoginHelp("카카오 로그인 상태값 검증에 실패했습니다.");
     showToast("카카오 로그인 상태값 검증에 실패했습니다.");
     cleanAuthQueryString();
     return;
   }
 
-  loginHelpText.textContent = "카카오 로그인 처리 중입니다...";
+  setLoginHelp("카카오 로그인 처리 중입니다...");
 
   try {
     const response = await fetch(kakao.loginEndpoint, {
@@ -873,6 +889,7 @@ async function handleKakaoCallbackIfNeeded() {
     await auth.signInWithCustomToken(data.customToken);
   } catch (err) {
     console.error("카카오 로그인 처리 실패:", err);
+    setLoginHelp(`카카오 로그인 실패: ${err.message}`);
     showToast("카카오 로그인 처리에 실패했습니다.");
   } finally {
     sessionStorage.removeItem("kakao_oauth_state");
@@ -887,20 +904,25 @@ function cleanAuthQueryString() {
 
 async function startGoogleLogin() {
   const provider = new firebase.auth.GoogleAuthProvider();
+  setLoginHelp("Google 로그인 페이지로 이동 중입니다...");
 
   try {
     await auth.signInWithRedirect(provider);
   } catch (error) {
     console.error("Google 로그인 시작 실패:", error);
+    setLoginHelp(`Google 로그인 실패: ${error.message}`);
     showToast("Google 로그인 시작에 실패했습니다.");
   }
 }
 
 async function startGuestLogin() {
+  setLoginHelp("게스트 로그인 중입니다...");
+
   try {
     await auth.signInAnonymously();
   } catch (error) {
     console.error("게스트 로그인 실패:", error);
+    setLoginHelp(`게스트 로그인 실패: ${error.message}`);
     showToast("게스트 로그인에 실패했습니다.");
   }
 }
@@ -914,6 +936,7 @@ async function initAuth() {
     try {
       await auth.signOut();
       showToast("로그아웃되었습니다.");
+      setLoginHelp("로그인 후 이어서 플레이할 수 있습니다.");
     } catch (error) {
       console.error("로그아웃 실패:", error);
       showToast("로그아웃에 실패했습니다.");
@@ -924,6 +947,7 @@ async function initAuth() {
     await auth.getRedirectResult();
   } catch (error) {
     console.error("Google redirect result 처리 실패:", error);
+    setLoginHelp(`Google 로그인 실패: ${error.message}`);
     showToast("Google 로그인 처리에 실패했습니다.");
   }
 
@@ -934,7 +958,7 @@ async function initAuth() {
 
     if (!user) {
       loginScreen.classList.remove("hidden");
-      loginHelpText.textContent = "로그인 후 이어서 플레이할 수 있습니다.";
+      setLoginHelp("로그인 후 이어서 플레이할 수 있습니다.");
       updateAccountUI(null);
       state.completed = [];
       renderMarkers();
@@ -943,7 +967,7 @@ async function initAuth() {
     }
 
     loginScreen.classList.add("hidden");
-    loginHelpText.textContent = "로그인 후 이어서 플레이할 수 있습니다.";
+    setLoginHelp("로그인되었습니다. 저장된 정보를 불러오는 중입니다...");
     updateAccountUI(user);
     await loadUserProgress();
   });

@@ -15,10 +15,13 @@
  */
 window.APP_CONFIG = {
   firebaseConfig: {
-    apiKey: "AIzaSyBry7iYrFlaqavBve6Jg1L7K4prIrBFLC",
+    apiKey: "AIzaSyBry7iYrFlaQaYBve6JFg1L7K4prTrBFLc",
     authDomain: "stamp-tour-94232.firebaseapp.com",
     projectId: "stamp-tour-94232",
-    appId: "1:643695917667:web:aaef5eece7cdc98801656",
+    storageBucket: "stamp-tour-94232.firebasestorage.app",
+    messagingSenderId: "643695917667",
+    appId: "1:643695917667:web:aaef5eeece7cdc98801656",
+    measurementId: "G-8PF9YT5WH4"
   },
 
   kakao: {
