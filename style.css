@@ -51,6 +51,95 @@ img {
   -webkit-user-drag: none;
 }
 
+.hidden {
+  display: none !important;
+}
+
+/* 로그인 화면 */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background:
+    radial-gradient(circle at top, rgba(15, 98, 254, 0.18), transparent 40%),
+    linear-gradient(180deg, #0b0b0f, #10131a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: min(92vw, 420px);
+  background: rgba(255, 255, 255, 0.96);
+  color: #111;
+  border-radius: 26px;
+  padding: 28px 22px 22px;
+  box-shadow: var(--shadow);
+}
+
+.login-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.login-title {
+  margin: 18px 0 8px;
+  font-size: 26px;
+  line-height: 1.25;
+  color: #111;
+}
+
+.login-desc {
+  margin: 0;
+  color: #5a5a5a;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.login-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.login-btn {
+  height: 54px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.login-btn.google {
+  background: #4285f4;
+  color: #fff;
+}
+
+.login-btn.kakao {
+  background: #fee500;
+  color: #191600;
+}
+
+.login-btn.guest {
+  background: #2f3238;
+  color: #fff;
+}
+
+.login-help {
+  margin: 14px 0 0;
+  color: #707070;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 #app {
   height: 100%;
   width: 100%;
@@ -72,6 +161,13 @@ img {
   pointer-events: none;
 }
 
+.brand-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
+}
+
 .brand {
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
@@ -81,7 +177,37 @@ img {
   font-weight: 800;
   letter-spacing: -0.03em;
   backdrop-filter: blur(8px);
-  pointer-events: auto;
+  width: fit-content;
+}
+
+.account-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #111;
+  padding: 8px 10px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.account-name {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.logout-btn {
+  min-width: 72px;
+  height: 32px;
+  border-radius: 10px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .status-panel {
@@ -290,6 +416,17 @@ img {
   padding: 22px 18px 18px;
   box-shadow: var(--shadow);
   overflow-y: auto;
+}
+
+.center-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 420px);
+  max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 32px);
+  overflow: hidden;
 }
 
 .quiz-panel {
@@ -589,15 +726,8 @@ img {
     font-size: 22px;
     margin-top: 8px;
   }
-}
 
-.center-panel {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  bottom: auto;
-  transform: translate(-50%, -50%);
-  width: min(92vw, 420px);
-  max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 32px);
-  overflow: hidden;
+  .account-name {
+    max-width: 100px;
+  }
 }

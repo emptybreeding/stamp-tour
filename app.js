@@ -1,5 +1,4 @@
 const TOTAL_SPOTS = 31;
-const STORAGE_KEY = "stamp-tour-progress-v1";
 
 const mapViewport = document.getElementById("mapViewport");
 const mapStage = document.getElementById("mapStage");
@@ -32,6 +31,23 @@ const quizFeedbackOverlay = document.getElementById("quizFeedbackOverlay");
 const quizFeedbackSymbol = document.getElementById("quizFeedbackSymbol");
 const quizFeedbackMessage = document.getElementById("quizFeedbackMessage");
 
+const loginScreen = document.getElementById("loginScreen");
+const googleLoginBtn = document.getElementById("googleLoginBtn");
+const kakaoLoginBtn = document.getElementById("kakaoLoginBtn");
+const guestLoginBtn = document.getElementById("guestLoginBtn");
+const loginHelpText = document.getElementById("loginHelpText");
+const accountBox = document.getElementById("accountBox");
+const accountName = document.getElementById("accountName");
+const logoutBtn = document.getElementById("logoutBtn");
+
+const { firebaseConfig, kakao } = window.APP_CONFIG;
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+
 const state = {
   naturalWidth: 1024,
   naturalHeight: 1536,
@@ -46,7 +62,7 @@ const state = {
   answeredCorrectly: false,
   userPosition: null,
   watchId: null,
-  completed: loadProgress(),
+  completed: [],
   markers: [],
   pointers: new Map(),
   pinch: {
@@ -119,43 +135,6 @@ const spots = Array.from({ length: TOTAL_SPOTS }, (_, i) => {
   };
 });
 
-function loadProgress() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((n) => Number.isInteger(n));
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveProgress() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.completed));
-}
-
-function isCompleted(spotId) {
-  return state.completed.includes(spotId);
-}
-
-function markCompleted(spotId) {
-  if (isCompleted(spotId)) return;
-
-  state.completed.push(spotId);
-  saveProgress();
-  updateCounters();
-  refreshMarkerState(spotId, true);
-}
-
-function updateCounters() {
-  const completed = state.completed.length;
-  const remaining = TOTAL_SPOTS - completed;
-
-  remainingCountEl.textContent = String(remaining);
-  completedCountEl.textContent = `${completed} / ${TOTAL_SPOTS}`;
-}
-
 function showToast(message) {
   toastEl.textContent = message;
   toastEl.classList.remove("hidden");
@@ -163,7 +142,7 @@ function showToast(message) {
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => {
     toastEl.classList.add("hidden");
-  }, 1200);
+  }, 1400);
 }
 
 function openModal(modalEl) {
@@ -174,6 +153,126 @@ function openModal(modalEl) {
 function closeModal(modalEl) {
   modalEl.classList.add("hidden");
   modalEl.setAttribute("aria-hidden", "true");
+}
+
+function updateCounters() {
+  const completed = state.completed.length;
+  const remaining = TOTAL_SPOTS - completed;
+
+  remainingCountEl.textContent = String(remaining);
+  completedCountEl.textContent = `${completed} / ${TOTAL_SPOTS}`;
+}
+
+function updateAccountUI(user) {
+  if (!user) {
+    accountBox.classList.add("hidden");
+    accountName.textContent = "";
+    return;
+  }
+
+  let providerLabel = "로그인";
+
+  if (user.isAnonymous) {
+    providerLabel = "게스트";
+  } else {
+    const providerId =
+      (user.providerData && user.providerData[0] && user.providerData[0].providerId) ||
+      "custom";
+
+    providerLabel =
+      providerId === "google.com"
+        ? "Google"
+        : providerId === "custom"
+        ? "Kakao"
+        : "로그인";
+  }
+
+  accountName.textContent =
+    `${user.displayName || user.email || "게스트 사용자"} · ${providerLabel}`;
+  accountBox.classList.remove("hidden");
+}
+
+function normalizeCompleted(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.filter((n) => Number.isInteger(n) && n >= 1 && n <= TOTAL_SPOTS))].sort(
+    (a, b) => a - b
+  );
+}
+
+async function loadUserProgress() {
+  if (!currentUser) {
+    state.completed = [];
+    renderMarkers();
+    updateCounters();
+    return;
+  }
+
+  try {
+    const userRef = db.collection("users").doc(currentUser.uid);
+    const snap = await userRef.get();
+
+    if (snap.exists) {
+      const data = snap.data() || {};
+      state.completed = normalizeCompleted(data.completedSpotIds);
+    } else {
+      state.completed = [];
+      await userRef.set(
+        {
+          displayName: currentUser.displayName || "",
+          email: currentUser.email || "",
+          isAnonymous: !!currentUser.isAnonymous,
+          completedSpotIds: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+
+    renderMarkers();
+    updateCounters();
+  } catch (error) {
+    console.error("진행 상태 불러오기 실패:", error);
+    showToast("저장된 진행 정보를 불러오지 못했습니다.");
+  }
+}
+
+async function saveCompletedSpot(spotId) {
+  if (!currentUser) return;
+
+  const userRef = db.collection("users").doc(currentUser.uid);
+
+  await userRef.set(
+    {
+      displayName: currentUser.displayName || "",
+      email: currentUser.email || "",
+      isAnonymous: !!currentUser.isAnonymous,
+      completedSpotIds: firebase.firestore.FieldValue.arrayUnion(spotId),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+function isCompleted(spotId) {
+  return state.completed.includes(spotId);
+}
+
+async function markCompleted(spotId) {
+  if (isCompleted(spotId)) return;
+
+  state.completed = normalizeCompleted([...state.completed, spotId]);
+  updateCounters();
+  refreshMarkerState(spotId, true);
+
+  try {
+    await saveCompletedSpot(spotId);
+  } catch (error) {
+    console.error("자동 저장 실패:", error);
+    showToast("자동 저장에 실패했습니다. 다시 시도해 주세요.");
+  }
 }
 
 function resetQuizFeedbackState() {
@@ -305,6 +404,12 @@ function renderMarkers() {
 
     marker.addEventListener("click", (event) => {
       event.stopPropagation();
+
+      if (!currentUser) {
+        showToast("로그인 후 플레이할 수 있습니다.");
+        return;
+      }
+
       onMarkerClick(spot.id);
     });
 
@@ -362,11 +467,11 @@ function openQuizForActiveSpot() {
   openModal(quizModal);
 }
 
-function finishMissionForActiveSpot() {
+async function finishMissionForActiveSpot() {
   const spotId = state.activeQuizSpotId;
   if (!spotId || !state.answeredCorrectly) return;
 
-  markCompleted(spotId);
+  await markCompleted(spotId);
   closeQuizPopup();
   showToast("도장이 찍혔습니다!");
   state.activeSpotId = null;
@@ -670,9 +775,9 @@ function setupModalEvents() {
     openQuizForActiveSpot();
   });
 
-  missionCompleteBtn.addEventListener("click", () => {
+  missionCompleteBtn.addEventListener("click", async () => {
     if (missionCompleteBtn.disabled) return;
-    finishMissionForActiveSpot();
+    await finishMissionForActiveSpot();
   });
 
   spotCloseBtn.addEventListener("click", closeSpotPopup);
@@ -695,6 +800,155 @@ function setupModalEvents() {
   });
 }
 
+function buildKakaoState() {
+  return `kakao:${crypto.randomUUID()}`;
+}
+
+function startKakaoLogin() {
+  if (!kakao.restApiKey || !kakao.loginEndpoint) {
+    showToast("카카오 설정값이 비어 있습니다.");
+    return;
+  }
+
+  const stateToken = buildKakaoState();
+  sessionStorage.setItem("kakao_oauth_state", stateToken);
+
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: kakao.restApiKey,
+    redirect_uri: kakao.redirectUri,
+    state: stateToken,
+  });
+
+  window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
+}
+
+async function handleKakaoCallbackIfNeeded() {
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get("code");
+  const stateParam = url.searchParams.get("state");
+  const error = url.searchParams.get("error");
+
+  if (error) {
+    showToast("카카오 로그인에 실패했습니다.");
+    cleanAuthQueryString();
+    return;
+  }
+
+  if (!code || !stateParam || !stateParam.startsWith("kakao:")) {
+    return;
+  }
+
+  const storedState = sessionStorage.getItem("kakao_oauth_state");
+  if (!storedState || storedState !== stateParam) {
+    showToast("카카오 로그인 상태값 검증에 실패했습니다.");
+    cleanAuthQueryString();
+    return;
+  }
+
+  loginHelpText.textContent = "카카오 로그인 처리 중입니다...";
+
+  try {
+    const response = await fetch(kakao.loginEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code,
+        redirectUri: kakao.redirectUri,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.customToken) {
+      throw new Error("customToken missing");
+    }
+
+    await auth.signInWithCustomToken(data.customToken);
+  } catch (err) {
+    console.error("카카오 로그인 처리 실패:", err);
+    showToast("카카오 로그인 처리에 실패했습니다.");
+  } finally {
+    sessionStorage.removeItem("kakao_oauth_state");
+    cleanAuthQueryString();
+  }
+}
+
+function cleanAuthQueryString() {
+  const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+  window.history.replaceState({}, document.title, cleanUrl);
+}
+
+async function startGoogleLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  try {
+    await auth.signInWithRedirect(provider);
+  } catch (error) {
+    console.error("Google 로그인 시작 실패:", error);
+    showToast("Google 로그인 시작에 실패했습니다.");
+  }
+}
+
+async function startGuestLogin() {
+  try {
+    await auth.signInAnonymously();
+  } catch (error) {
+    console.error("게스트 로그인 실패:", error);
+    showToast("게스트 로그인에 실패했습니다.");
+  }
+}
+
+async function initAuth() {
+  googleLoginBtn.addEventListener("click", startGoogleLogin);
+  kakaoLoginBtn.addEventListener("click", startKakaoLogin);
+  guestLoginBtn.addEventListener("click", startGuestLogin);
+
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await auth.signOut();
+      showToast("로그아웃되었습니다.");
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+      showToast("로그아웃에 실패했습니다.");
+    }
+  });
+
+  try {
+    await auth.getRedirectResult();
+  } catch (error) {
+    console.error("Google redirect result 처리 실패:", error);
+    showToast("Google 로그인 처리에 실패했습니다.");
+  }
+
+  await handleKakaoCallbackIfNeeded();
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+
+    if (!user) {
+      loginScreen.classList.remove("hidden");
+      loginHelpText.textContent = "로그인 후 이어서 플레이할 수 있습니다.";
+      updateAccountUI(null);
+      state.completed = [];
+      renderMarkers();
+      updateCounters();
+      return;
+    }
+
+    loginScreen.classList.add("hidden");
+    loginHelpText.textContent = "로그인 후 이어서 플레이할 수 있습니다.";
+    updateAccountUI(user);
+    await loadUserProgress();
+  });
+}
+
 function init() {
   updateCounters();
   renderMarkers();
@@ -703,6 +957,7 @@ function init() {
   setupModalEvents();
   setupGeolocation();
   updateGeoStatusText();
+  initAuth();
 }
 
 init();
