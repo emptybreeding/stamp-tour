@@ -27,6 +27,11 @@ const choiceX = document.getElementById("choiceX");
 const quizResultArea = document.getElementById("quizResultArea");
 const toastEl = document.getElementById("toast");
 
+const quizContent = document.getElementById("quizContent");
+const quizFeedbackOverlay = document.getElementById("quizFeedbackOverlay");
+const quizFeedbackSymbol = document.getElementById("quizFeedbackSymbol");
+const quizFeedbackMessage = document.getElementById("quizFeedbackMessage");
+
 const state = {
   naturalWidth: 1024,
   naturalHeight: 1536,
@@ -171,6 +176,19 @@ function closeModal(modalEl) {
   modalEl.setAttribute("aria-hidden", "true");
 }
 
+function resetQuizFeedbackState() {
+  quizContent.classList.remove("blurred");
+  quizFeedbackOverlay.classList.add("hidden");
+  quizFeedbackOverlay.classList.remove("correct", "wrong");
+  quizResultArea.textContent = "";
+  quizResultArea.className = "quiz-result-area";
+  missionCompleteBtn.disabled = true;
+  choiceO.disabled = false;
+  choiceX.disabled = false;
+  clearTimeout(showQuizFeedback.timer);
+  clearTimeout(setQuizResult.timer);
+}
+
 function closeSpotPopup() {
   closeModal(spotModal);
   state.activeSpotId = null;
@@ -180,9 +198,30 @@ function closeQuizPopup() {
   closeModal(quizModal);
   state.activeQuizSpotId = null;
   state.answeredCorrectly = false;
-  missionCompleteBtn.disabled = true;
-  quizResultArea.textContent = "";
-  quizResultArea.className = "quiz-result-area";
+  resetQuizFeedbackState();
+}
+
+function showQuizFeedback(correct) {
+  quizContent.classList.add("blurred");
+
+  quizFeedbackOverlay.classList.remove("hidden", "correct", "wrong");
+  quizFeedbackOverlay.classList.add(correct ? "correct" : "wrong");
+
+  quizFeedbackSymbol.textContent = correct ? "O" : "X";
+  quizFeedbackMessage.textContent = correct ? "성공입니다" : "다시 시도해보세요";
+
+  quizFeedbackSymbol.style.animation = "none";
+  quizFeedbackMessage.style.animation = "none";
+  void quizFeedbackOverlay.offsetWidth;
+  quizFeedbackSymbol.style.animation = "";
+  quizFeedbackMessage.style.animation = "";
+
+  clearTimeout(showQuizFeedback.timer);
+  showQuizFeedback.timer = setTimeout(() => {
+    quizFeedbackOverlay.classList.add("hidden");
+    quizFeedbackOverlay.classList.remove("correct", "wrong");
+    quizContent.classList.remove("blurred");
+  }, 900);
 }
 
 function getSpotById(spotId) {
@@ -318,10 +357,7 @@ function openQuizForActiveSpot() {
   state.activeQuizSpotId = state.activeSpotId;
   state.answeredCorrectly = false;
 
-  missionCompleteBtn.disabled = true;
-  quizResultArea.textContent = "";
-  quizResultArea.className = "quiz-result-area";
-
+  resetQuizFeedbackState();
   closeModal(spotModal);
   openModal(quizModal);
 }
@@ -337,6 +373,9 @@ function finishMissionForActiveSpot() {
 }
 
 function setQuizResult(correct) {
+  choiceO.disabled = true;
+  choiceX.disabled = true;
+
   if (correct) {
     quizResultArea.textContent = "정답입니다";
     quizResultArea.className = "quiz-result-area correct";
@@ -349,13 +388,15 @@ function setQuizResult(correct) {
     state.answeredCorrectly = false;
   }
 
-  showToast(correct ? "정답입니다" : "오답입니다");
+  showQuizFeedback(correct);
 
   clearTimeout(setQuizResult.timer);
   setQuizResult.timer = setTimeout(() => {
     quizResultArea.textContent = "";
     quizResultArea.className = "quiz-result-area";
-  }, 1200);
+    choiceO.disabled = false;
+    choiceX.disabled = false;
+  }, 900);
 }
 
 function setupGeolocation() {
@@ -488,7 +529,10 @@ function screenToWorld(screenX, screenY) {
 }
 
 function zoomAtPoint(nextZoom, centerX, centerY) {
-  const clampedZoom = Math.min(state.maxZoom, Math.max(state.minZoom, nextZoom));
+  const clampedZoom = Math.min(
+    state.maxZoom,
+    Math.max(state.minZoom, nextZoom)
+  );
 
   const oldScale = state.baseScale * state.zoom;
   const newScale = state.baseScale * clampedZoom;

@@ -1,466 +1,603 @@
 :root {
-    --bg: #0b0b0f;
-    --panel: rgba(255, 255, 255, 0.96);
-    --text: #151515;
-    --muted: #707070;
-    --primary: #0f62fe;
-    --primary-disabled: #8fb5ff;
-    --secondary: #f3f3f3;
-    --danger: #ff5b5b;
-    --success: #18a957;
-    --stamp: #e03131;
-    --shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    background: var(--bg);
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-      "Noto Sans KR", "Segoe UI", sans-serif;
-    overflow: hidden;
-    color: #fff;
-  }
-  
-  body {
-    touch-action: none;
-  }
-  
-  button {
-    font: inherit;
-    border: 0;
-    outline: none;
-    cursor: pointer;
-  }
-  
-  img {
-    user-select: none;
-    -webkit-user-drag: none;
-  }
-  
-  #app {
-    height: 100%;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 30;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    padding: calc(12px + var(--safe-top)) 14px 8px;
-    pointer-events: none;
-  }
-  
-  .brand {
-    background: rgba(0, 0, 0, 0.55);
-    color: #fff;
-    padding: 10px 14px;
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    backdrop-filter: blur(8px);
-    pointer-events: auto;
-  }
-  
-  .status-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    pointer-events: auto;
-  }
-  
-  .status-card {
-    min-width: 108px;
-    background: rgba(255, 255, 255, 0.96);
-    color: #111;
-    border-radius: 14px;
-    padding: 10px 12px;
-    box-shadow: var(--shadow);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .status-label {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 700;
-  }
-  
-  .status-card strong {
-    font-size: 17px;
-    font-weight: 900;
-  }
-  
-  .map-shell {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-  }
-  
-  .map-viewport {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    touch-action: none;
-    background: #000;
-  }
-  
-  .map-stage {
-    position: absolute;
-    left: 0;
-    top: 0;
-    transform-origin: 0 0;
-    will-change: transform;
-  }
-  
-  #mapImage {
-    display: block;
-    width: 1024px;
-    height: 1536px;
-    object-fit: contain;
-    pointer-events: none;
-  }
-  
-  .marker-layer {
-    position: absolute;
-    inset: 0;
-  }
-  
-  .mission-marker {
-    position: absolute;
-    width: 48px;
-    height: 48px;
-    margin-left: -24px;
-    margin-top: -24px;
-    border-radius: 12px;
-    border: 2px solid #111;
-    background: rgba(255, 255, 255, 0.92);
-    color: #111;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 16px;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-    transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
-  }
-  
-  .mission-marker:active {
-    transform: scale(0.94);
-  }
-  
-  .mission-marker.disabled {
-    opacity: 0.95;
-    background: rgba(230, 230, 230, 0.95);
-    color: #666;
-    border-color: #666;
-  }
-  
-  .marker-inner {
-    position: relative;
-    z-index: 2;
-  }
-  
-  .marker-complete-label {
-    position: absolute;
-    top: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--success);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 4px 8px;
-    border-radius: 999px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-  }
-  
-  .mission-marker.completed .marker-complete-label {
-    opacity: 1;
-  }
-  
-  .marker-stamp {
-    position: absolute;
-    inset: -8px;
-    border: 4px solid var(--stamp);
-    color: var(--stamp);
-    border-radius: 16px;
+  --bg: #0b0b0f;
+  --panel: rgba(255, 255, 255, 0.96);
+  --text: #151515;
+  --muted: #707070;
+  --primary: #0f62fe;
+  --primary-disabled: #8fb5ff;
+  --secondary: #f3f3f3;
+  --danger: #ff5b5b;
+  --success: #18a957;
+  --stamp: #e03131;
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", "Segoe UI", sans-serif;
+  overflow: hidden;
+  color: #fff;
+}
+
+body {
+  touch-action: none;
+}
+
+button {
+  font: inherit;
+  border: 0;
+  outline: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: calc(12px + var(--safe-top)) 14px 8px;
+  pointer-events: none;
+}
+
+.brand {
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+
+.status-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.status-card {
+  min-width: 108px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #111;
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.status-card strong {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.map-shell {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.map-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  background: #000;
+}
+
+.map-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+#mapImage {
+  display: block;
+  width: 1024px;
+  height: 1536px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.marker-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.mission-marker {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  margin-left: -48px;
+  margin-top: -48px;
+  border-radius: 18px;
+  border: 3px solid #111;
+  background: rgba(255, 255, 255, 0.96);
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 30px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+}
+
+.mission-marker:active {
+  transform: scale(0.94);
+}
+
+.mission-marker.disabled {
+  opacity: 0.95;
+  background: rgba(230, 230, 230, 0.95);
+  color: #666;
+  border-color: #666;
+}
+
+.marker-inner {
+  position: relative;
+  z-index: 2;
+}
+
+.marker-complete-label {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--success);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.mission-marker.completed .marker-complete-label {
+  opacity: 1;
+}
+
+.marker-stamp {
+  position: absolute;
+  inset: -8px;
+  border: 4px solid var(--stamp);
+  color: var(--stamp);
+  border-radius: 16px;
+  opacity: 0;
+  transform: scale(1.8) rotate(-10deg);
+  pointer-events: none;
+}
+
+.mission-marker.stamp-animate .marker-stamp {
+  animation: stampPop 0.7s ease forwards;
+}
+
+@keyframes stampPop {
+  0% {
     opacity: 0;
     transform: scale(1.8) rotate(-10deg);
-    pointer-events: none;
   }
-  
-  .mission-marker.stamp-animate .marker-stamp {
-    animation: stampPop 0.7s ease forwards;
+  45% {
+    opacity: 1;
+    transform: scale(0.84) rotate(-10deg);
   }
-  
-  @keyframes stampPop {
-    0% {
-      opacity: 0;
-      transform: scale(1.8) rotate(-10deg);
-    }
-    45% {
-      opacity: 1;
-      transform: scale(0.84) rotate(-10deg);
-    }
-    70% {
-      opacity: 1;
-      transform: scale(1.03) rotate(-10deg);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1) rotate(-10deg);
-    }
+  70% {
+    opacity: 1;
+    transform: scale(1.03) rotate(-10deg);
   }
-  
-  .geo-bar {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: calc(12px + var(--safe-bottom));
-    z-index: 20;
-    display: flex;
-    justify-content: center;
-    pointer-events: none;
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-10deg);
   }
-  
-  .geo-bar span {
-    background: rgba(0, 0, 0, 0.64);
-    color: #fff;
-    padding: 10px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-    backdrop-filter: blur(8px);
+}
+
+.geo-bar {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + var(--safe-bottom));
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.geo-bar span {
+  background: rgba(0, 0, 0, 0.64);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.modal-panel {
+  position: absolute;
+  left: 50%;
+  bottom: calc(16px + var(--safe-bottom));
+  transform: translateX(-50%);
+  width: min(92vw, 420px);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 24px;
+  padding: 22px 18px 18px;
+  box-shadow: var(--shadow);
+  overflow-y: auto;
+}
+
+.quiz-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 420px);
+  max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 32px);
+  overflow: hidden;
+}
+
+.quiz-content {
+  position: relative;
+  z-index: 1;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+  max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 80px);
+  overflow-y: auto;
+}
+
+.quiz-content.blurred {
+  filter: blur(8px);
+  opacity: 0.45;
+}
+
+.spot-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.spot-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #0f62fe, #7ea9ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  box-shadow: 0 10px 25px rgba(15, 98, 254, 0.25);
+}
+
+.modal-title {
+  margin: 16px 0 8px;
+  text-align: center;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.modal-desc {
+  margin: 0 0 18px;
+  text-align: center;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.location-box {
+  background: #f7f8fb;
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.location-label {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+#locationCheckText {
+  color: var(--primary);
+  font-size: 15px;
+}
+
+.quiz-badge {
+  display: inline-flex;
+  background: #eef4ff;
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.quiz-question {
+  margin: 18px 0 20px;
+  padding: 20px 16px;
+  border-radius: 18px;
+  background: #f7f8fb;
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 800;
+  text-align: center;
+}
+
+.quiz-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.choice-btn {
+  height: 72px;
+  border-radius: 18px;
+  font-size: 30px;
+  font-weight: 900;
+  color: #fff;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.choice-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.choice-btn:disabled {
+  opacity: 0.6;
+}
+
+.choice-o {
+  background: linear-gradient(135deg, #1bbf6b, #0d9f53);
+}
+
+.choice-x {
+  background: linear-gradient(135deg, #ff6a6a, #e33b3b);
+}
+
+.quiz-result-area {
+  min-height: 26px;
+  margin: 14px 4px 6px;
+  text-align: center;
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.quiz-result-area.correct {
+  color: var(--success);
+}
+
+.quiz-result-area.wrong {
+  color: var(--danger);
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.btn {
+  height: 52px;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  background: var(--primary-disabled);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: #222;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 200;
+  padding: 14px 18px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: var(--shadow);
+}
+
+.toast.hidden {
+  display: none;
+}
+
+.quiz-feedback-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.quiz-feedback-overlay.hidden {
+  display: none;
+}
+
+.quiz-feedback-symbol {
+  font-size: 110px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  opacity: 0;
+  transform: scale(0.88);
+  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  animation: quizFeedbackSymbolPop 0.9s ease forwards;
+}
+
+.quiz-feedback-message {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #5b4a3d;
+  opacity: 0;
+  transform: translateY(6px);
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  animation: quizFeedbackMessagePop 0.9s ease forwards;
+}
+
+.quiz-feedback-overlay.correct .quiz-feedback-symbol {
+  color: #42b95a;
+}
+
+.quiz-feedback-overlay.wrong .quiz-feedback-symbol {
+  color: #f0625f;
+}
+
+@keyframes quizFeedbackSymbolPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
   }
-  
-  .modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
+  15% {
+    opacity: 1;
+    transform: scale(1);
   }
-  
-  .modal.hidden {
-    display: none;
+  75% {
+    opacity: 1;
+    transform: scale(1);
   }
-  
-  .modal-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.58);
-    backdrop-filter: blur(3px);
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
   }
-  
-  .modal-panel {
-    position: absolute;
-    left: 50%;
-    bottom: calc(16px + var(--safe-bottom));
-    transform: translateX(-50%);
-    width: min(92vw, 420px);
-    background: var(--panel);
-    color: var(--text);
-    border-radius: 24px;
-    padding: 22px 18px 18px;
-    box-shadow: var(--shadow);
+}
+
+@keyframes quizFeedbackMessagePop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
   }
-  
-  .quiz-panel {
-    bottom: 50%;
-    transform: translate(-50%, 50%);
+  18% {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .spot-icon-wrap {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
+  75% {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .spot-icon {
-    width: 76px;
-    height: 76px;
-    border-radius: 22px;
-    background: linear-gradient(135deg, #0f62fe, #7ea9ff);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 34px;
-    box-shadow: 0 10px 25px rgba(15, 98, 254, 0.25);
+  100% {
+    opacity: 0;
+    transform: translateY(-2px);
   }
-  
-  .modal-title {
-    margin: 16px 0 8px;
-    text-align: center;
-    font-size: 24px;
-    line-height: 1.2;
-    letter-spacing: -0.03em;
+}
+
+@media (max-width: 420px) {
+  .mission-marker {
+    width: 88px;
+    height: 88px;
+    margin-left: -44px;
+    margin-top: -44px;
+    font-size: 28px;
   }
-  
-  .modal-desc {
-    margin: 0 0 18px;
-    text-align: center;
-    color: var(--muted);
-    font-weight: 700;
+
+  .quiz-feedback-symbol {
+    font-size: 82px;
   }
-  
-  .location-box {
-    background: #f7f8fb;
-    border-radius: 18px;
-    padding: 14px 16px;
-    margin-bottom: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+
+  .quiz-feedback-message {
+    font-size: 22px;
+    margin-top: 8px;
   }
-  
-  .location-label {
-    color: var(--muted);
-    font-weight: 700;
-    font-size: 14px;
-  }
-  
-  #locationCheckText {
-    color: var(--primary);
-    font-size: 15px;
-  }
-  
-  .quiz-badge {
-    display: inline-flex;
-    background: #eef4ff;
-    color: var(--primary);
-    font-weight: 800;
-    font-size: 12px;
-    border-radius: 999px;
-    padding: 6px 10px;
-  }
-  
-  .quiz-question {
-    margin: 18px 0 20px;
-    padding: 20px 16px;
-    border-radius: 18px;
-    background: #f7f8fb;
-    font-size: 18px;
-    line-height: 1.6;
-    font-weight: 800;
-    text-align: center;
-  }
-  
-  .quiz-choices {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  
-  .choice-btn {
-    height: 72px;
-    border-radius: 18px;
-    font-size: 30px;
-    font-weight: 900;
-    color: #fff;
-  }
-  
-  .choice-o {
-    background: linear-gradient(135deg, #1bbf6b, #0d9f53);
-  }
-  
-  .choice-x {
-    background: linear-gradient(135deg, #ff6a6a, #e33b3b);
-  }
-  
-  .quiz-result-area {
-    min-height: 26px;
-    margin: 14px 4px 6px;
-    text-align: center;
-    font-weight: 900;
-    font-size: 15px;
-  }
-  
-  .quiz-result-area.correct {
-    color: var(--success);
-  }
-  
-  .quiz-result-area.wrong {
-    color: var(--danger);
-  }
-  
-  .modal-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 14px;
-  }
-  
-  .btn {
-    height: 52px;
-    border-radius: 16px;
-    font-weight: 900;
-    font-size: 16px;
-  }
-  
-  .btn-primary {
-    background: var(--primary);
-    color: #fff;
-  }
-  
-  .btn-primary:disabled {
-    background: var(--primary-disabled);
-    color: rgba(255, 255, 255, 0.75);
-    cursor: not-allowed;
-  }
-  
-  .btn-secondary {
-    background: var(--secondary);
-    color: #222;
-  }
-  
-  .toast {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 200;
-    padding: 14px 18px;
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.82);
-    color: #fff;
-    font-size: 15px;
-    font-weight: 900;
-    box-shadow: var(--shadow);
-  }
-  
-  .toast.hidden {
-    display: none;
-  }
-  
-  @media (max-width: 420px) {
-    .mission-marker {
-      width: 44px;
-      height: 44px;
-      margin-left: -22px;
-      margin-top: -22px;
-      font-size: 15px;
-    }
-  }
+}
+
+.center-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 420px);
+  max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 32px);
+  overflow: hidden;
+}

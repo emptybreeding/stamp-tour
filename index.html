@@ -48,22 +48,27 @@
     <!-- 기본 팝업 -->
     <div id="spotModal" class="modal hidden" aria-hidden="true">
       <div class="modal-backdrop" data-close="spot"></div>
-
-      <div class="modal-panel">
+    
+      <div class="modal-panel center-panel">
         <div class="spot-icon-wrap">
           <div class="spot-icon">📍</div>
         </div>
-
+    
         <h2 id="spotTitle" class="modal-title">여행지</h2>
         <p id="spotMessage" class="modal-desc">어서오세요</p>
-
+    
         <div class="location-box">
           <span class="location-label">위치 인증</span>
           <strong id="locationCheckText">확인 중...</strong>
         </div>
-
+    
         <div class="modal-actions">
-          <button id="missionStartBtn" class="btn btn-primary" type="button" disabled>
+          <button
+            id="missionStartBtn"
+            class="btn btn-primary"
+            type="button"
+            disabled
+          >
             미션수행
           </button>
           <button id="spotCloseBtn" class="btn btn-secondary" type="button">
@@ -78,32 +83,45 @@
       <div class="modal-backdrop" data-close="quiz"></div>
 
       <div class="modal-panel quiz-panel">
-        <div class="quiz-badge">O/X 퀴즈</div>
-        <h2 class="modal-title">미션 수행</h2>
+        <div id="quizContent" class="quiz-content">
+          <div class="quiz-badge">O/X 퀴즈</div>
+          <h2 class="modal-title">미션 수행</h2>
 
-        <div class="quiz-question">
-          대한민국의 국번은 <strong>82</strong>가 맞다?
+          <div class="quiz-question">
+            대한민국의 국번은 <strong>82</strong>가 맞다?
+          </div>
+
+          <div class="quiz-choices">
+            <button id="choiceO" class="choice-btn choice-o" type="button">
+              O
+            </button>
+            <button id="choiceX" class="choice-btn choice-x" type="button">
+              X
+            </button>
+          </div>
+
+          <div id="quizResultArea" class="quiz-result-area"></div>
+
+          <div class="modal-actions">
+            <button
+              id="missionCompleteBtn"
+              class="btn btn-primary"
+              type="button"
+              disabled
+            >
+              미션수행 완료
+            </button>
+            <button id="quizCloseBtn" class="btn btn-secondary" type="button">
+              닫기
+            </button>
+          </div>
         </div>
 
-        <div class="quiz-choices">
-          <button id="choiceO" class="choice-btn choice-o" type="button">O</button>
-          <button id="choiceX" class="choice-btn choice-x" type="button">X</button>
-        </div>
-
-        <div id="quizResultArea" class="quiz-result-area"></div>
-
-        <div class="modal-actions">
-          <button
-            id="missionCompleteBtn"
-            class="btn btn-primary"
-            type="button"
-            disabled
-          >
-            미션수행 완료
-          </button>
-          <button id="quizCloseBtn" class="btn btn-secondary" type="button">
-            닫기
-          </button>
+        <div id="quizFeedbackOverlay" class="quiz-feedback-overlay hidden">
+          <div id="quizFeedbackSymbol" class="quiz-feedback-symbol">O</div>
+          <div id="quizFeedbackMessage" class="quiz-feedback-message">
+            성공입니다
+          </div>
         </div>
       </div>
     </div>
