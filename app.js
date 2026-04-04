@@ -928,6 +928,13 @@ async function startGuestLogin() {
 }
 
 async function initAuth() {
+  try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  } catch (error) {
+    console.error("Auth persistence 설정 실패:", error);
+    setLoginHelp(`인증 저장 설정 실패: ${error.message}`);
+  }
+
   googleLoginBtn.addEventListener("click", startGoogleLogin);
   kakaoLoginBtn.addEventListener("click", startKakaoLogin);
   guestLoginBtn.addEventListener("click", startGuestLogin);
