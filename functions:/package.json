@@ -1,12 +1,17 @@
 {
-    "name": "stamp-tour-functions",
-    "private": true,
-    "engines": {
-      "node": "20"
-    },
-    "main": "index.js",
-    "dependencies": {
-      "firebase-admin": "^12.5.0",
-      "firebase-functions": "^5.1.1"
-    }
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "functions/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
+}
